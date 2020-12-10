@@ -60,12 +60,13 @@ app.command('/helloworld', async ({ ack, payload, context }) => {
   // Acknowledge the command request
   ack();
   // findConversation("apptest");
-  fetchHistory("C01H9B41R32");
+  // fetchHistory("C01H9B41R32");
+  console.log(payload);
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
       // Channel to send message to
-      channel: payload.channel_id,
+      channel: 'D011DELJL66',
       // Include a button in the message (or whatever blocks you want!)
       blocks: [
         {
@@ -87,10 +88,10 @@ app.command('/helloworld', async ({ ack, payload, context }) => {
       // Text in the notification
       text: 'Message from Test App'
     });
-    // console.log(result);
+    console.log(result);
   }
   catch (error) {
-    console.error(error);
+    console.error(error.data);
   }
 });
 
