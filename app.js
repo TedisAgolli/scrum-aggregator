@@ -10,10 +10,57 @@ const app = new App({
 
 // All the room in the world for your code
 
+// Store conversation history
+let conversationHistory;
+
+// Fetch conversation history using ID from last example
+async function fetchHistory(id) {
+  try {
+    // Call the conversations.history method using the built-in WebClient
+    const result = await app.client.conversations.history({
+      // The token you used to initialize your app
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: id
+    });
+
+    conversationHistory = result.messages;
+
+    // Print results
+    console.log(conversationHistory);
+    console.log(conversationHistory.length + " messages found in " + id);
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+async function findConversation(name) {
+  try {
+    // Call the conversations.list method using the built-in WebClient
+    const result = await app.client.conversations.list({
+      // The token you used to initialize your app
+      token: process.env.SLACK_BOT_TOKEN
+    });
+
+    for (const channel of result.channels) {
+      if (channel.name === name) {
+        // Print result
+        console.log("Found conversation ID: " + channel.id);
+        // Break from for loop
+        break;
+      }
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
 app.command('/helloworld', async ({ ack, payload, context }) => {
   // Acknowledge the command request
   ack();
-  console.log("HEY THERE");
+  // findConversation("apptest");
+  fetchHistory("C01H9B41R32");
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
@@ -40,7 +87,7 @@ app.command('/helloworld', async ({ ack, payload, context }) => {
       // Text in the notification
       text: 'Message from Test App'
     });
-    console.log(result);
+    // console.log(result);
   }
   catch (error) {
     console.error(error);
