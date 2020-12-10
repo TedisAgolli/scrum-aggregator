@@ -14,7 +14,7 @@ const app = new App({
 let conversationHistory;
 
 // Fetch conversation history using ID from last example
-async function fetchHistory(id) {
+async function fetchHistory(id, user_id) {
   try {
     // Call the conversations.history method using the built-in WebClient
     const result = await app.client.conversations.history({
@@ -25,9 +25,11 @@ async function fetchHistory(id) {
 
     conversationHistory = result.messages;
 
-    // Print results
     console.log(conversationHistory);
-    console.log(conversationHistory.length + " messages found in " + id);
+    return conversationHistory.filter((msg) => msg.user === user_id).map((x) => x.text).join("\n");
+    // Print results
+    // console.log(conversationHistory);
+    // console.log(conversationHistory.length + " messages found in " + id);
   }
   catch (error) {
     console.error(error);
@@ -60,20 +62,21 @@ app.command('/helloworld', async ({ ack, payload, context }) => {
   // Acknowledge the command request
   ack();
   // findConversation("apptest");
-  // fetchHistory("C01H9B41R32");
-  console.log(payload);
+  
+  const fromTed = await fetchHistory("C01H9B41R32", payload.user_id);
+  // console.log(payload);
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
       // Channel to send message to
-      channel: 'D011DELJL66',
+      channel: payload.channel_id,
       // Include a button in the message (or whatever blocks you want!)
       blocks: [
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: 'Go ahead. Click it.'
+            text: fromTed
           },
           accessory: {
             type: 'button',
