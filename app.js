@@ -3,10 +3,8 @@ const { App } = require("@slack/bolt");
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
-
-
 
 // All the room in the world for your code
 
@@ -20,18 +18,20 @@ async function fetchHistory(id, user_id) {
     const result = await app.client.conversations.history({
       // The token you used to initialize your app
       token: process.env.SLACK_BOT_TOKEN,
-      channel: id
+      channel: id,
     });
 
     conversationHistory = result.messages;
 
     console.log(conversationHistory);
-    return conversationHistory.filter((msg) => msg.user === user_id).map((x) => x.text).join("\n");
+    return conversationHistory
+      .filter((msg) => msg.user === user_id)
+      .map((x) => x.text)
+      .join("\n");
     // Print results
     // console.log(conversationHistory);
     // console.log(conversationHistory.length + " messages found in " + id);
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
   }
 }
@@ -41,7 +41,7 @@ async function findConversation(name) {
     // Call the conversations.list method using the built-in WebClient
     const result = await app.client.conversations.list({
       // The token you used to initialize your app
-      token: process.env.SLACK_BOT_TOKEN
+      token: process.env.SLACK_BOT_TOKEN,
     });
 
     for (const channel of result.channels) {
@@ -52,17 +52,16 @@ async function findConversation(name) {
         break;
       }
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
   }
 }
 
-app.command('/helloworld', async ({ ack, payload, context }) => {
+app.command("/helloworld", async ({ ack, payload, context }) => {
   // Acknowledge the command request
   ack();
   // findConversation("apptest");
-  
+
   const fromTed = await fetchHistory("C01H9B41R32", payload.user_id);
   // console.log(payload);
   try {
@@ -73,88 +72,85 @@ app.command('/helloworld', async ({ ack, payload, context }) => {
       // Include a button in the message (or whatever blocks you want!)
       blocks: [
         {
-          type: 'section',
+          type: "section",
           text: {
-            type: 'mrkdwn',
-            text: fromTed
+            type: "mrkdwn",
+            text: fromTed,
           },
           accessory: {
-            type: 'button',
+            type: "button",
             text: {
-              type: 'plain_text',
-              text: 'Click me!'
+              type: "plain_text",
+              text: "Click me!",
             },
-            action_id: 'button_abc'
-          }
-        }
+            action_id: "button_abc",
+          },
+        },
       ],
       // Text in the notification
-      text: 'Message from Test App'
+      text: "Message from Test App",
     });
     console.log(result);
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error.data);
   }
 });
 
-app.event('app_home_opened', async ({ event, client, context }) => {
+app.event("app_home_opened", async ({ event, client, context }) => {
   try {
     /* view.publish is the method that your app uses to push a view to the Home tab */
     const result = await client.views.publish({
-
       /* the user that opened your app's app home */
       user_id: event.user,
 
       /* the view object that appears in the app home*/
       view: {
-        type: 'home',
-        callback_id: 'home_view',
+        type: "home",
+        callback_id: "home_view",
 
         /* body of the view */
         blocks: [
           {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": "*Welcome to your _App's Home_* :tada:"
-            }
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "*Welcome to your _App's Home_* :tada:",
+            },
           },
           {
-            "type": "divider"
+            type: "divider",
           },
           {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app."
-            }
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text:
+                "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app.",
+            },
           },
           {
-            "type": "actions",
-            "elements": [
+            type: "actions",
+            elements: [
               {
-                "type": "button",
-                "text": {
-                  "type": "plain_text",
-                  "text": "Click me!"
-                }
-              }
-            ]
-          }
-        ]
-      }
+                type: "button",
+                text: {
+                  type: "plain_text",
+                  text: "Click me!",
+                },
+              },
+            ],
+          },
+        ],
+      },
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
   }
 });
-
 
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
 
-  console.log('⚡️ Bolt app is running!');
+  console.log("⚡️ Bolt app is running!");
 })();
