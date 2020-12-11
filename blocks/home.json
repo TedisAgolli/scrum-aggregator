@@ -1,0 +1,68 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Select your scrum channel"
+      },
+      "accessory": {
+        "type": "multi_conversations_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select conversations",
+          "emoji": true
+        },
+        "action_id": "multi_conversations_select-action"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Start date"
+      },
+      "accessory": {
+        "type": "datepicker",
+        "initial_date": "1990-04-28",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a date",
+          "emoji": true
+        },
+        "action_id": "datepicker-action"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "End date."
+      },
+      "accessory": {
+        "type": "datepicker",
+        "initial_date": "1990-04-28",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a date",
+          "emoji": true
+        },
+        "action_id": "datepicker-action"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Get updates",
+            "emoji": true
+          },
+          "value": "click_me_123"
+        }
+      ]
+    }
+  ]
+}

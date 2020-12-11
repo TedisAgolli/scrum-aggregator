@@ -1,15 +1,81 @@
 // Require the Bolt package (github.com/slackapi/bolt)
+const dotenv = require("dotenv");
+dotenv.config();
 const { App } = require("@slack/bolt");
 
+const HOME_BLOCKS = [
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: "Select your scrum channel",
+    },
+    accessory: {
+      type: "multi_conversations_select",
+      placeholder: {
+        type: "plain_text",
+        text: "Select conversations",
+        emoji: true,
+      },
+      action_id: "select_scrum_channel",
+    },
+  },
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: "Start date",
+    },
+    accessory: {
+      type: "datepicker",
+      initial_date: "1990-04-28",
+      placeholder: {
+        type: "plain_text",
+        text: "Select a date",
+        emoji: true,
+      },
+      action_id: "datepicker_start",
+    },
+  },
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: "End date.",
+    },
+    accessory: {
+      type: "datepicker",
+      initial_date: "1990-04-28",
+      placeholder: {
+        type: "plain_text",
+        text: "Select a date",
+        emoji: true,
+      },
+      action_id: "datepicker_end",
+    },
+  },
+  {
+    type: "actions",
+    elements: [
+      {
+        type: "button",
+        text: {
+          type: "plain_text",
+          text: "Get updates",
+          emoji: true,
+        },
+        action_id: "button_list_updates",
+        value: "button_list_updates",
+      },
+    ],
+  },
+];
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
 // All the room in the world for your code
-
-// Store conversation history
-let conversationHistory;
 
 // Fetch conversation history using ID from last example
 async function fetchHistory(id, user_id) {
@@ -20,17 +86,10 @@ async function fetchHistory(id, user_id) {
       token: process.env.SLACK_BOT_TOKEN,
       channel: id,
     });
-
-    conversationHistory = result.messages;
-
-    console.log(conversationHistory);
-    return conversationHistory
+    return result.messages
       .filter((msg) => msg.user === user_id)
       .map((x) => x.text)
       .join("\n");
-    // Print results
-    // console.log(conversationHistory);
-    // console.log(conversationHistory.length + " messages found in " + id);
   } catch (error) {
     console.error(error);
   }
@@ -57,38 +116,32 @@ async function findConversation(name) {
   }
 }
 
-app.command("/helloworld", async ({ ack, payload, context }) => {
-  // Acknowledge the command request
+app.action("datepicker_start", async ({ ack, client, body }) => {
   ack();
-  // findConversation("apptest");
+  console.log(body);
+});
 
-  const fromTed = await fetchHistory("C01H9B41R32", payload.user_id);
-  // console.log(payload);
+app.action("button_list_updates", async ({ ack, client, body, context }) => {
+  ack();
+  const fromTed = await fetchHistory("C01H9B41R32", body.user.id);
+  const updates = {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: fromTed,
+    },
+  };
   try {
-    const result = await app.client.chat.postMessage({
-      token: context.botToken,
-      // Channel to send message to
-      channel: payload.channel_id,
-      // Include a button in the message (or whatever blocks you want!)
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: fromTed,
-          },
-          accessory: {
-            type: "button",
-            text: {
-              type: "plain_text",
-              text: "Click me!",
-            },
-            action_id: "button_abc",
-          },
-        },
-      ],
-      // Text in the notification
-      text: "Message from Test App",
+    const result = await client.views.publish({
+      /* the user that opened your app's app home */
+      user_id: body.user.id,
+      /* the view object that appears in the app home*/
+      view: {
+        type: "home",
+        callback_id: "home_view",
+        /* body of the view */
+        blocks: [...HOME_BLOCKS, updates],
+      },
     });
     console.log(result);
   } catch (error) {
@@ -109,38 +162,7 @@ app.event("app_home_opened", async ({ event, client, context }) => {
         callback_id: "home_view",
 
         /* body of the view */
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: "*Welcome to your _App's Home_* :tada:",
-            },
-          },
-          {
-            type: "divider",
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text:
-                "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app.",
-            },
-          },
-          {
-            type: "actions",
-            elements: [
-              {
-                type: "button",
-                text: {
-                  type: "plain_text",
-                  text: "Click me!",
-                },
-              },
-            ],
-          },
-        ],
+        blocks: HOME_BLOCKS,
       },
     });
   } catch (error) {
